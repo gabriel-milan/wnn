@@ -1,0 +1,2 @@
+data/jets.npz filter=lfs diff=lfs merge=lfs -text
+data/zee.npz filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,10 @@
+opencv-python==4.5.2.54
+numpy==1.21.0
+pandas==1.3.0
+scikit-image==0.18.1
+scikit_learn==0.24.2
+numba==0.53.1
+SQLAlchemy==1.4.19
+wisardpkg==1.6.3
+sqlalchemy-utils==0.37.7
+psycopg2-binary
