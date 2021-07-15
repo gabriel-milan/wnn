@@ -4,7 +4,6 @@ from utils import *
 import json
 from sys import argv
 import wisardpkg as wp
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
@@ -139,10 +138,10 @@ class Gym:
             raise Exception("Model needs training before evaluation!")
         return self._model[i].classify(X)
 
-    def evaluate(self, X: list, y: list, i: int = 0) -> float:
+    def evaluate(self, X: list, y: list, i: int = 0) -> list:
         """Makes classification for model and returns accuracy"""
         y_pred: list = self.predict(X, i=i)
-        return accuracy_score(y, y_pred)  # TODO: Change to SP metric
+        return list(sp(y, y_pred, return_pd_fa=True))
 
     def train_full(self) -> None:
         """Trains using full train set"""
@@ -202,12 +201,11 @@ class Gym:
                     self.train_cluster(X_train, y_train)
                 else:
                     self.train(X_train, y_train)
-                score: float = self.evaluate(X_valid, y_valid)
+                score: list = self.evaluate(X_valid, y_valid)
                 if verbose:
                     print("Score: {:.4f}%".format(score*100))
-                scores.append(score)
-
-            ret_scores[j] = np.mean(scores)
+                scores.append(np.array(score))
+            ret_scores[j] = np.mean(np.array(scores), axis=0)
         return ret_scores
 
 
@@ -218,6 +216,5 @@ if __name__ == "__main__":
         raise IndexError("Please provide the path to the configuration file")
     db = DBManager()
     g = Gym(config_file_path)
-    val_acc = g.train_with_kfold()
-    test_acc = g.evaluate(g.X_test_binary, g.y_test)
-    db.add_train_result(g.config, val_accuracy=val_acc, test_accuracy=test_acc)
+    val_scores = g.train_with_kfold()
+    db.add_train_result(g.config, scores=val_scores)

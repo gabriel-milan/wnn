@@ -19,12 +19,13 @@ BINARIZATION_OPTIONS = [
     "adaptive_thresh_gaussian",
     "adaptive_thresh_mean"
 ]
-BINARIZATION_THRESHOLDS = [32, 64, 128, 192]
-BINARIZATION_RESOLUTIONS = [16, 32, 64]
+BINARIZATION_THRESHOLDS = [-192, -128, -64, -32, 0, 32, 64, 128, 192]
+BINARIZATION_RESOLUTIONS = [8, 16, 24, 32, 48, 64]
 NS_WINDOW = [3, 5, 7, 9, 11]
 ADDRESS_SIZES = [15, 16, 17, 18, 19,
                  20, 21, 22, 23, 24,
-                 25, 26, 27, 28, 29]
+                 25, 26, 27, 28, 29,
+                 30, 31, 32, 33, 34, ]
 FEATURE_SET_OPTIONS = [
     "rings",
     "shower_shape"

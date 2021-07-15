@@ -45,11 +45,7 @@ class ThermometerEncoder(object):
     def decode(self, pattern):
         pattern = np.asarray(pattern)
 
-        # TODO: Check if pattern is at least a vector
-        # TODO: Check if pattern length or number of rows is equal to resolution
-        # TODO: Check if pattern is a binary array
         if pattern.ndim == 1:
-            # TODO: Test np.count_nonzero
             popcount = np.sum(pattern)
 
             return self.minimum + popcount*(self.maximum - self.minimum)/self.resolution
@@ -89,9 +85,6 @@ class CircularThermometerEncoder(object):
     def decode(self, pattern):
         pattern = np.asarray(pattern)
 
-        # TODO: Check if pattern is at least a vector
-        # TODO: Check if pattern length or number of rows is equal to resolution
-        # TODO: Check if pattern is a binary array
         if pattern.ndim == 1:
             first_0 = index(pattern, 0)[0]
             first_1 = index(pattern, 1)[0]

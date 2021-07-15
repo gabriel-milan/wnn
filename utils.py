@@ -9,6 +9,24 @@ from skimage.filters import threshold_niblack, threshold_sauvola
 from sklearn.preprocessing import normalize
 
 
+def sp(y_true: list, y_pred: list, return_pd_fa: bool = False) -> tuple:
+    """Computes the SP metric"""
+    y_true: np.ndarray = np.array(y_true)
+    y_pred: np.ndarray = np.array(y_pred)
+    tp = tn = fp = fn = 0
+    tp = np.sum((y_true == "1") & (y_pred == "1"))
+    tn = np.sum((y_true == "0") & (y_pred == "0"))
+    fp = np.sum((y_true == "0") & (y_pred == "1"))
+    fn = np.sum((y_true == "1") & (y_pred == "0"))
+    fa = fp / (tn + fp + np.finfo(float).eps)
+    pd = tp / (tp + fn + np.finfo(float).eps)
+    sp = np.sqrt(np.sqrt(pd*(1-fa))*(0.5*(pd+(1-fa))))
+    if return_pd_fa:
+        return sp, pd, fa
+    else:
+        return sp
+
+
 def load_data() -> tuple:
     """Loads shower shape and rings data"""
 
@@ -41,7 +59,7 @@ def load_data() -> tuple:
     def normalize_df_dict(df_dict: dict) -> dict:
         """Normalizes dataframe values"""
         for i in range(5):
-            df_dict[i] = normalize(df_dict[i], axis=1, norm="l1")
+            df_dict[i] = normalize(df_dict[i], axis=1, norm="l1") * 255
         return df_dict
 
     # Load full data
@@ -80,12 +98,12 @@ class Binarizer():
     def basic_bin(self, arr: np.ndarray, threshold: int = 128) -> list:
         return [list(np.where(x < threshold, 0, 1).flatten()) for x in arr]
 
-    def simple_thermometer(self, arr: np.ndarray, minimum: int = 0, maximum: int = 255, resolution: int = 25) -> list:
+    def simple_thermometer(self, arr: np.ndarray, minimum: int = -255, maximum: int = 255, resolution: int = 25) -> list:
         therm = ThermometerEncoder(
             maximum=maximum, minimum=minimum, resolution=resolution)
         return [np.uint8(therm.encode(x)).flatten() for x in arr]
 
-    def circular_thermometer(self, arr: np.ndarray, minimum: int = 0, maximum: int = 255, resolution: int = 20) -> list:
+    def circular_thermometer(self, arr: np.ndarray, minimum: int = -255, maximum: int = 255, resolution: int = 20) -> list:
         therm = CircularThermometerEncoder(
             maximum=maximum, minimum=minimum, resolution=resolution)
         return [np.uint8(therm.encode(x)).flatten() for x in arr]
@@ -107,7 +125,7 @@ class Binarizer():
         return bin_imgs
 
     def adaptive_thresh_mean(self, arr: np.ndarray, window_size: int = 11, constant_c: int = 2) -> list:
-        return [cv.adaptiveThreshold(x, 1, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, window_size, constant_c).flatten() for x in arr]
+        return [cv.adaptiveThreshold(x, 1, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, window_size, constant_c).flatten() for x in arr.astype(np.uint8)]
 
     def adaptive_thresh_gaussian(self, arr: np.ndarray, window_size: int = 11, constant_c: int = 2) -> list:
-        return [cv.adaptiveThreshold(x, 1, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, window_size, constant_c).flatten() for x in arr]
+        return [cv.adaptiveThreshold(x, 1, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, window_size, constant_c).flatten() for x in arr.astype(np.uint8)]

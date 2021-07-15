@@ -1,4 +1,5 @@
 from os import getenv
+import numpy as np
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Float, Integer, String, Boolean, create_engine
@@ -9,8 +10,6 @@ __all__ = ["DBManager"]
 
 Base = declarative_base()
 
-# TODO: change model for accepting accuracies for each E_T bin
-
 
 class TrainTable(Base):
 
@@ -19,6 +18,7 @@ class TrainTable(Base):
     # Columns
     id = Column(Integer, primary_key=True)
     wsd_cluster = Column(Boolean)
+    feature_set = Column(String)
     random_seed = Column(Integer)
     train_validation_split = Column(Float)
     train_folds = Column(Integer)
@@ -34,12 +34,32 @@ class TrainTable(Base):
     window_size = Column(Integer)
     constant_c = Column(Float)
     constant_k = Column(Float)
-    val_accuracy = Column(Float)
-    test_accuracy = Column(Float)
+    et1_val_sp = Column(Float)
+    et2_val_sp = Column(Float)
+    et3_val_sp = Column(Float)
+    et4_val_sp = Column(Float)
+    et5_val_sp = Column(Float)
+    et1_val_pd = Column(Float)
+    et2_val_pd = Column(Float)
+    et3_val_pd = Column(Float)
+    et4_val_pd = Column(Float)
+    et5_val_pd = Column(Float)
+    et1_val_fa = Column(Float)
+    et2_val_fa = Column(Float)
+    et3_val_fa = Column(Float)
+    et4_val_fa = Column(Float)
+    et5_val_fa = Column(Float)
 
     def __repr__(self) -> str:
-        return "<Wisard Train (accuracy={}, address_size={}, binarization={}, binarization_threshold={}, binarization_resolution={})>".format(
-            self.accuracy, self.wsd_address_size, self.binarization, self.binarization_threshold, self.binarization_resolution)
+        return "<Wisard Train (accuracy={}, clus_wizard={}, address_size={}, binarization={}, binarization_threshold={}, binarization_resolution={})>".format(
+            np.mean([self.et1_val_sp, self.et2_val_sp,
+                    self.et3_val_sp, self.et4_val_sp, self.et5_val_sp]),
+            self.wsd_cluster,
+            self.wsd_address_size,
+            self.binarization,
+            self.binarization_threshold,
+            self.binarization_resolution
+        )
 
 
 class DBManager:
@@ -56,10 +76,28 @@ class DBManager:
 
         self._session: Session = sessionmaker(bind=self._engine)()
 
-    def add_train_result(self, config: dict, val_accuracy: float, test_accuracy: float):
+    def add_train_result(self, config: dict, scores: list):
+        et1 = scores[0]
+        et2 = scores[1]
+        et3 = scores[2]
+        et4 = scores[3]
+        et5 = scores[4]
         train_result = TrainTable(
-            val_accuracy=val_accuracy,
-            test_accuracy=test_accuracy,
+            et1_val_sp=et1[0],
+            et2_val_sp=et2[0],
+            et3_val_sp=et3[0],
+            et4_val_sp=et4[0],
+            et5_val_sp=et5[0],
+            et1_val_pd=et1[1],
+            et2_val_pd=et2[1],
+            et3_val_pd=et3[1],
+            et4_val_pd=et4[1],
+            et5_val_pd=et5[1],
+            et1_val_fa=et1[2],
+            et2_val_fa=et2[2],
+            et3_val_fa=et3[2],
+            et4_val_fa=et4[2],
+            et5_val_fa=et5[2],
             **config
         )
         self._session.add(train_result)
