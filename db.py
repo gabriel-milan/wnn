@@ -11,6 +11,33 @@ __all__ = ["DBManager"]
 Base = declarative_base()
 
 
+class EnsembleTable(Base):
+
+    __tablename__ = "ensemble"
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    mode = Column(String)
+    n_best = Column(Integer)
+    threshold = Column(Float)
+    weights = Column(String)
+    et1_val_sp = Column(Float)
+    et2_val_sp = Column(Float)
+    et3_val_sp = Column(Float)
+    et4_val_sp = Column(Float)
+    et5_val_sp = Column(Float)
+    et1_val_pd = Column(Float)
+    et2_val_pd = Column(Float)
+    et3_val_pd = Column(Float)
+    et4_val_pd = Column(Float)
+    et5_val_pd = Column(Float)
+    et1_val_fa = Column(Float)
+    et2_val_fa = Column(Float)
+    et3_val_fa = Column(Float)
+    et4_val_fa = Column(Float)
+    et5_val_fa = Column(Float)
+
+
 class TrainTable(Base):
 
     __tablename__ = "train"
@@ -75,6 +102,37 @@ class DBManager:
             Base.metadata.create_all(self._engine)
 
         self._session: Session = sessionmaker(bind=self._engine)()
+
+    @property
+    def session(self) -> Session:
+        return self._session
+
+    def add_ensemble_result(self, config: dict, scores: list):
+        et1 = scores[0]
+        et2 = scores[1]
+        et3 = scores[2]
+        et4 = scores[3]
+        et5 = scores[4]
+        ensemble_result = EnsembleTable(
+            et1_val_sp=et1[0],
+            et2_val_sp=et2[0],
+            et3_val_sp=et3[0],
+            et4_val_sp=et4[0],
+            et5_val_sp=et5[0],
+            et1_val_pd=et1[1],
+            et2_val_pd=et2[1],
+            et3_val_pd=et3[1],
+            et4_val_pd=et4[1],
+            et5_val_pd=et5[1],
+            et1_val_fa=et1[2],
+            et2_val_fa=et2[2],
+            et3_val_fa=et3[2],
+            et4_val_fa=et4[2],
+            et5_val_fa=et5[2],
+            **config
+        )
+        self._session.add(ensemble_result)
+        self._session.commit()
 
     def add_train_result(self, config: dict, scores: list):
         et1 = scores[0]

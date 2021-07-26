@@ -182,12 +182,14 @@ class Gym:
         kf = StratifiedKFold(n_splits=folds, shuffle=True,
                              random_state=self._config["random_seed"])
         ret_scores = [None for _ in range(5)]
+        ret_preds = [None for _ in range(5)]
         for j in range(5):
             if verbose:
                 print("#" * 25)
                 print(f"## ET {j + 1}")
                 print("#" * 25)
             scores = []
+            preds = []
             for fold, (idxT, idxV) in enumerate(kf.split(self.X_binary[j], self.y[j])):
                 if verbose:
                     print(f"- FOLD {fold + 1}: ", end="")
@@ -202,11 +204,14 @@ class Gym:
                 else:
                     self.train(X_train, y_train)
                 score: list = self.evaluate(X_valid, y_valid)
+                pred: list = [int(v) for v in self.predict(X_valid)]
                 if verbose:
                     print("Score: {:.4f}%".format(score*100))
                 scores.append(np.array(score))
+                preds.append(pred)
             ret_scores[j] = np.mean(np.array(scores), axis=0)
-        return ret_scores
+            ret_preds[j] = preds
+        return ret_scores, ret_preds
 
 
 if __name__ == "__main__":
@@ -216,5 +221,5 @@ if __name__ == "__main__":
         raise IndexError("Please provide the path to the configuration file")
     db = DBManager()
     g = Gym(config_file_path)
-    val_scores = g.train_with_kfold()
+    val_scores, _ = g.train_with_kfold()
     db.add_train_result(g.config, scores=val_scores)

@@ -1,0 +1,9 @@
+{
+  "mode": "majority",
+  "weights": [
+    1,
+    1
+  ],
+  "threshold": 0.5,
+  "n_best": 2
+}
